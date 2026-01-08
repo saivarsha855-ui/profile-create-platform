@@ -1,0 +1,506 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <title>Skill Sharing Platform</title>
+    <style>
+        /* Base Styling - BACKGROUND LAVENDER L8 */
+        body { margin: 0; font-family: Arial, sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; background: #f3e8ff; transition: background 0.3s; }
+        .hidden { display: none !important; }
+        .card { background: #fff; width: 420px; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        h3 { margin-bottom: 5px; }
+        label { display: block; font-weight: bold; margin-top: 12px; font-size: 14px; }
+        input, textarea, select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { width: 100%; margin-top: 20px; padding: 12px; background: #1a1a2e; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .step { text-align: center; font-size: 13px; margin-bottom: 10px; color: #555; }
+        .success-toast { position: fixed; bottom: 20px; right: 20px; background: white; padding: 10px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-left: 4px solid #10b981; font-size: 13px; display: flex; align-items: center; gap: 8px; z-index: 1000; }
+
+        /* Dashboard Styles - BACKGROUND LAVENDER L8 */
+        #dashboardPage { background: #f3e8ff; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; overflow-y: auto; }
+        header { background: white; padding: 10px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; }
+        nav { display: flex; justify-content: center; gap: 20px; padding: 15px; background: white; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #64748b; }
+        nav span { cursor: pointer; padding-bottom: 2px; }
+        .nav-active { color: #000; font-weight: bold; border-bottom: 2px solid #000; }
+        
+        .dash-content { max-width: 800px; margin: 40px auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .skill-tag { background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 11px; margin-right: 5px; }
+
+        /* NEW STYLES */
+        .forgot-pass { font-size: 12px; color: #6366f1; cursor: pointer; text-align: right; margin-top: 5px; display: block; }
+        .tick-container { width: 60px; height: 60px; margin: 0 auto 15px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .tick-icon { width: 30px; height: 15px; border-left: 5px solid white; border-bottom: 5px solid white; transform: rotate(-45deg); margin-top: -5px; }
+        .btn-clear { width: auto; background: none; color: #ef4444; border: 1px solid #ef4444; padding: 5px 15px; margin-top: 10px; font-size: 12px; }
+        .btn-clear:hover { background: #fee2e2; }
+
+        /* Skill Item Styling */
+        .skill-item-card { margin-top:15px; padding:12px; background:#f8fafc; border-radius:8px; font-size:13px; border: 1px solid #e5e7eb; position: relative; }
+        .delete-skill-link { color: #ef4444; font-size: 12px; cursor: pointer; text-decoration: underline; margin-top: 5px; display: inline-block; }
+        
+        /* Modal Popup Styling */
+        #skillModalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .skill-modal { background: white; padding: 30px; border-radius: 12px; width: 350px; }
+
+        /* Edit Profile Specific Styling */
+        .edit-info-box { background: #fffbeb; border: 1px solid #fde68a; padding: 10px; border-radius: 6px; font-size: 12px; margin-top: 10px; }
+        .photo-circle { width: 80px; height: 80px; border-radius: 50%; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; margin: 10px 0; overflow: hidden; background: #f9f9f9; }
+        .photo-circle img { width: 100%; height: 100%; object-fit: cover; }
+    </style></head><body><div id="authCard" class="card">
+    <div style="text-align:center; margin-bottom:20px;">
+        <h3>Skill Sharing Platform</h3>
+        <p style="font-size:12px; color:#666;">Connect, Learn, and Share Your Skills</p>
+        <div style="display:flex; background:#f1f5f9; border-radius:8px; margin-top:15px;">
+            <button id="btnSi" onclick="showSignIn()" style="margin:0; background:white; color:black; flex:1;">Sign In</button>
+            <button id="btnSu" onclick="showSignUp()" style="margin:0; background:transparent; color:#666; flex:1;">Sign Up</button>
+        </div>
+    </div>
+    <div id="signInView">
+        <label>Email</label><input type="email" id="si-email" placeholder="your@email.com">
+        <label>Password</label><input type="password" id="si-pass" placeholder="********">
+        <span class="forgot-pass" onclick="alert('Password reset link sent to your email!')">Forgot password?</span>
+        <button onclick="handleSignIn()">→ Sign In</button>
+    </div>
+    <div id="signUpView" class="hidden">
+        <label>Full Name</label><input type="text" id="su-name" placeholder="John Doe">
+        <label>Email</label><input type="email" id="su-email" placeholder="your@email.com">
+        <label>Password</label><input type="password" id="su-pass" placeholder="********">
+        <button onclick="handleSignUp()">Create Account</button>
+    </div></div><div id="profileStep1" class="card hidden">
+    <div class="step">Step 1 of 2 • 50% Complete</div>
+    <h3>Basic Information</h3><div style="text-align:center; margin-bottom:20px;"><div id="imgPreview" style="width:100px; height:100px; border-radius:50%; background:#e5e7eb; display:flex; align-items:center; justify-content:center; font-size:32px; color:#6b7280; margin:0 auto 10px;">👤</div><label style="display:inline-block; padding:8px 14px; background:#1a1a2e; color:white; border-radius:6px; cursor:pointer; font-size:13px;">Upload Picture<input type="file" id="p-img" accept="image/*" hidden onchange="previewImage(event)"></label><div style="font-size:11px; color:#6b7280; margin-top:6px;">PNG, JPG up to 5MB</div></div>
+    <label>Full Name</label><input type="text" id="p-name" placeholder="Enter your full name">
+    <label>Email Address</label><input type="email" id="p-email" placeholder="Enter your email">
+    <label>Enter Phone Number</label><input
+  type="tel"
+  id="p-mobile"
+  placeholder="Enter 10-digit mobile number"
+  maxlength="10"
+  inputmode="numeric"
+  oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+>
+
+    <label>Short Bio / About Me</label><textarea id="p-about" placeholder="Tell us about yourself..."></textarea>
+    <label>Current Role</label>
+    <select id="p-role">
+        <option value="">Select your role</option>
+        <option>Student</option>
+        <option>Professional</option>
+        <option>Trainer</option>
+        <option>Freelancer</option>
+    </select>
+    <label>Location</label><input type="text" id="p-loc" placeholder="Tirupati">
+    <button onclick="goToStep2()">Continue to Skills →</button></div><div id="profileStep2" class="card hidden">
+    <div class="step">Step 2 of 2 • 100% Complete</div>
+    <h3>Skill Information</h3>
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+        <label style="margin:0;">Skills List</label>
+        <button onclick="openSkillModal()" style="width:auto; margin:0; padding: 5px 10px; font-size: 12px; background: #6366f1;">+ Add Skill</button>
+    </div>
+    <div id="setup-skills-list" style="max-height: 150px; overflow-y: auto; margin-top:10px;">
+        <p style="font-size: 12px; color: #999; text-align: center;">No skills added yet</p>
+    </div>
+    <label>+ Add Portfolio Link</label>
+    <input type="url" id="p-link" placeholder="https://github.com/yourprofile">
+    <label>Preferred Mode of Sharing *</label>
+    <div style="font-size:13px; margin-top:10px;">
+        <input type="checkbox" name="mode" value="Teach / Mentor" style="width:auto;"> Teach / Mentor <br>
+        <input type="checkbox" name="mode" value="Learn / Get Mentored" style="width:auto;"> Learn / Get Mentored
+    </div>
+    <label>Hourly Rate (USD)</label><input type="number" id="p-price" placeholder="0">
+    <button onclick="completeProfile()">Complete Profile</button></div><div id="successCard" class="card hidden" style="text-align:center;">
+    <div class="tick-container"><div class="tick-icon"></div></div>
+    <h3>Profile Completed!</h3>
+    <button onclick="goToDashboard()">Go to Dashboard →</button></div><div id="dashboardPage" class="hidden">
+    <header>
+        <div style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 20px;">📈</span> Skill Sharing Platform
+        </div>
+        <button onclick="location.reload()" style="width: auto; padding: 5px 15px; background: white; color: #333; border: 1px solid #ccc;">Logout</button>
+    </header>
+    <nav id="dashNav">
+        <span onclick="switchTab('browse', this)">🔍 Browse</span>
+        <span onclick="switchTab('profile', this)" class="nav-active">My Profile</span>
+        <span onclick="switchTab('skills', this)">My Skills</span>
+        <span onclick="switchTab('videos', this)">Videos</span>
+        <span onclick="switchTab('interests', this)">Interests</span>
+        <span onclick="switchTab('sessions', this)">Sessions</span>
+    </nav>
+
+    <div id="tab-browse" class="dash-content hidden">
+        <h3>Search Skills & People</h3>
+        <p style="font-size:13px; color:#64748b;">Find mentors, learners, and collaborators (Real-time updates)</p>
+        <input type="text" id="browse-search"
+       placeholder="Search by name, skill, or location..."
+       style="margin-top:10px;"
+       onkeyup="searchProfiles()">
+
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <select id="filter-role"><option>All Roles</option><option>Student</option><option>Professional</option></select>
+            <select id="filter-level"><option>Beginner</option><option>Intermediate</option><option>Expert</option></select>
+            <select id="filter-other"><option>All</option></select>
+        </div>
+        <div style="margin-top:20px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-weight:bold; font-size:14px;">0 profiles found</div>
+            <button class="btn-clear" onclick="alert('Filters Cleared')">Clear Filters</button>
+        </div>
+        <div id="browse-results" style="margin-top:20px;"></div>
+</div>
+    <div id="tab-profile" class="dash-content">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="width: 80px; height: 80px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 24px; color: #64748b; overflow:hidden;" id="d-avatar"></div>
+            <h2 style="margin: 0; text-transform: capitalize;" id="d-name"></h2>
+            <p style="margin: 5px 0; color: #6366f1;" id="d-email"></p>
+            <span style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 4px; font-size: 12px;" id="d-role"></span>
+            <br>
+            <button onclick="openEditProfile()" style="width: auto; background: white; color: #333; border: 1px solid #ccc; margin-top: 15px; padding: 5px 15px; cursor:pointer;">✎ Edit Profile</button>
+        </div>
+        <div style="text-align: left; font-size: 14px; color: #334155;">
+            <div style="border-bottom: 1px solid #f1f5f9; padding: 15px 0;"><div style="color: #94a3b8; font-size: 12px;">👤 About</div><div id="d-about"></div></div>
+            <div style="border-bottom: 1px solid #f1f5f9; padding: 15px 0;"><div style="color: #94a3b8; font-size: 12px;">🔗 Portfolio Link</div><div id="d-link"></div></div>
+            <div style="border-bottom: 1px solid #f1f5f9; padding: 15px 0;"><div style="color: #94a3b8; font-size: 12px;">📍 Location</div><div id="d-loc"></div></div>
+            <div style="border-bottom: 1px solid #f1f5f9; padding: 15px 0;"><div style="color: #94a3b8; font-size: 12px;">📱 Mobile</div><div id="d-mobile"></div></div>
+            <div style="border-bottom: 1px solid #f1f5f9; padding: 15px 0;"><div style="color: #94a3b8; font-size: 12px;">💰 Pricing</div><div id="d-price"></div></div>
+            <div style="padding: 15px 0;"><div style="color: #94a3b8; font-size: 12px;">👥 Preferred Modes</div><div id="d-modes"></div></div>
+        </div>
+    </div>
+
+    <div id="tab-edit-profile" class="dash-content hidden">
+        <h2>Edit Profile</h2>
+        <div class="photo-circle"><img id="edit-preview-img"></div>
+        <label>Profile Image</label>
+        <input type="file" accept="image/*" onchange="previewFile(this, 'edit-preview-img')">
+        <label>Mobile Number</label>
+        <input type="text" id="edit-mobile">
+        <label>Role</label>
+        <select id="edit-role">
+            <option>Student</option><option>Professional</option><option>Trainer</option><option>Freelancer</option>
+        </select>
+        <label>Bio</label>
+        <textarea id="edit-about"></textarea>
+        <hr style="margin:20px 0;">
+        <button style="background: #10b981;">Auto-Add Videos</button>
+        <div class="edit-info-box"><strong>🔒 Privacy Protected:</strong> Locked until you accept interest.</div>
+        <div style="display:flex; gap:10px; margin-top:30px;">
+            <button onclick="saveEditProfile()" style="flex:1;">Save Changes</button>
+            <button onclick="switchTab('profile', document.querySelectorAll('#dashNav span')[1])" style="flex:1; background:#f1f5f9; color:#333;">Cancel</button>
+        </div>
+    </div>
+
+    <div id="tab-skills" class="dash-content hidden">
+        <h3>My Expertise</h3>
+        <button style="width:auto; margin-top:10px;" onclick="openSkillModal()">Add New Skill (+)</button>
+        <div id="d-skills-list"></div>
+    </div>
+
+    <div id="tab-videos" class="dash-content hidden">
+    <h3>My Skill Videos</h3>
+    <p style="font-size:13px; color:#64748b;">Upload or add links to your skill videos</p>
+
+    <label>Video Title</label>
+    <input type="text" id="video-title" placeholder="Eg: Java Basics Tutorial">
+
+    <label>Video Link (YouTube / Drive)</label>
+    <input type="url" id="video-link" placeholder="https://youtube.com/...">
+
+    <button onclick="addVideo()">+ Add Video</button>
+
+    <hr style="margin:25px 0;">
+
+    <div id="video-list" style="font-size:13px; color:#334155;">
+        <p style="color:#94a3b8;">No videos added yet</p>
+    </div>
+</div>
+
+
+    <div id="tab-interests" class="dash-content hidden">
+        <h3>People Interested in Your Profile</h3>
+        <p style="font-size:13px; color:#64748b;">Users who want to connect with you</p>
+        <div style="text-align:center; margin-top:60px; color:#64748b;">
+            <span style="font-size:40px; opacity:0.3; display:block; margin-bottom:10px;">♡</span>
+            <p>No one has shown interest yet</p>
+            <p style="font-size:12px; color:#94a3b8;">Keep sharing your skills!</p>
+        </div>
+    </div>
+
+    <div id="tab-sessions" class="dash-content hidden">
+        <div style="display:flex; gap:40px;">
+            <div style="flex:1; border-right:1px solid #eee; padding-right:20px;">
+                <h3>Sessions Shared</h3>
+                <p style="font-size:13px; color:#64748b; margin-top:20px;">No sessions shared yet</p>
+                <p style="font-size:12px; color:#94a3b8;">Start teaching to see your sessions here</p>
+            </div>
+            <div style="flex:1;">
+                <h3>Ratings & Feedback</h3>
+                <div id="rating-section">
+    <div id="stars" style="font-size:28px; cursor:pointer; color:#fbbf24;">
+        <span onclick="rate(1)">☆</span>
+        <span onclick="rate(2)">☆</span>
+        <span onclick="rate(3)">☆</span>
+        <span onclick="rate(4)">☆</span>
+        <span onclick="rate(5)">☆</span>
+    </div>
+
+    <p id="rating-text" style="font-size:13px; color:#64748b;">
+        Click stars to rate
+    </p>
+</div>
+
+                <p style="font-size:12px; color:#94a3b8;">Complete sessions to receive feedback</p>
+            </div>
+        </div>
+    </div></div><div id="skillModalOverlay" class="hidden">
+    <div class="skill-modal">
+        <h3>Add New Skill</h3>
+        <label>Skill Name</label><input type="text" id="new-skill-name" placeholder="e.g. Java">
+        <label>Select level</label>
+        <select id="new-skill-level"><option>Beginner</option><option>Intermediate</option><option>Expert</option></select>
+        <label>Experience (Yrs)</label><input type="number" id="new-skill-exp" value="0">
+        <button onclick="addNewSkillToList()">Add Skill</button>
+        <button onclick="closeSkillModal()" style="background:#666;">Cancel</button>
+    </div></div><div id="toast" class="success-toast hidden">✅ <span id="toastMsg"></span></div><script>
+    let userData = { skillsArray: [], photo: null };
+
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function(){
+            const output = document.getElementById('imgPreview');
+            output.innerHTML = `<img src="${reader.result}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+            userData.photo = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function previewFile(input, imgId) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById(imgId);
+                img.src = e.target.result; img.style.display = 'block';
+                userData.photo = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function handleSignUp() {
+        const name = document.getElementById('su-name').value;
+        const email = document.getElementById('su-email').value;
+        const pass = document.getElementById('su-pass').value;
+        if(!name || !email || !pass) { alert("Please fill out all fields to create an account!"); return; }
+        userData.name = name; userData.email = email; userData.pass = pass;
+        document.getElementById('p-name').value = name;
+        document.getElementById('p-email').value = email;
+        showToast("Account created!"); showSignIn();
+    }
+
+    function handleSignIn() {
+        const email = document.getElementById('si-email').value;
+        const pass = document.getElementById('si-pass').value;
+        if(!email || !pass) { alert("Please enter email and password!"); return; }
+        if(email !== userData.email || pass !== userData.pass) { alert("Account not found. Please Sign Up first!"); return; }
+        document.getElementById('authCard').classList.add('hidden');
+        document.getElementById('profileStep1').classList.remove('hidden');
+    }
+
+    function goToStep2() {
+        const name = document.getElementById('p-name').value;
+        const email = document.getElementById('p-email').value;
+        const role = document.getElementById('p-role').value;
+        if(!name || !email || !role) { alert("Please fill in Name, Email, and Role to continue!"); return; }
+        userData.role = role;
+        userData.about = document.getElementById('p-about').value;
+        userData.loc = document.getElementById('p-loc').value;
+        userData.mobile = document.getElementById('p-mobile').value;
+        document.getElementById('profileStep1').classList.add('hidden');
+        document.getElementById('profileStep2').classList.remove('hidden');
+    }
+
+    function completeProfile() {
+        const modes = Array.from(document.querySelectorAll('input[name="mode"]:checked'));
+        if(userData.skillsArray.length === 0 || modes.length === 0) { alert("Please add at least one skill and select a sharing mode!"); return; }
+        userData.link = document.getElementById('p-link').value;
+        userData.price = document.getElementById('p-price').value;
+        userData.modes = modes.map(m => m.value);
+        // SAVE PROFILE FOR BROWSE PAGE
+let allProfiles = JSON.parse(localStorage.getItem("profiles")) || [];
+
+allProfiles.push({
+    name: userData.name,
+    email: userData.email,
+    role: userData.role,
+    skills: userData.skillsArray,
+    location: userData.loc
+});
+
+localStorage.setItem("profiles", JSON.stringify(allProfiles));
+
+        document.getElementById('profileStep2').classList.add('hidden');
+        document.getElementById('successCard').classList.remove('hidden');
+    }
+
+    function goToDashboard() {
+        document.getElementById('successCard').classList.add('hidden');
+        document.getElementById('tab-edit-profile').classList.add('hidden');
+        document.getElementById('dashboardPage').classList.remove('hidden');
+        document.getElementById('tab-profile').classList.remove('hidden');
+        document.getElementById('d-name').innerText = userData.name;
+        document.getElementById('d-email').innerText = userData.email;
+        document.getElementById('d-role').innerText = userData.role;
+        document.getElementById('d-about').innerText = userData.about;
+        document.getElementById('d-loc').innerText = userData.loc;
+        document.getElementById('d-mobile').innerText = userData.mobile;
+        document.getElementById('d-link').innerText = userData.link || "Not provided";
+        document.getElementById('d-price').innerText = `$${userData.price || 0}/hour`;
+        const av = document.getElementById('d-avatar');
+        if(userData.photo) av.innerHTML = `<img src="${userData.photo}" style="width:100%;height:100%;object-fit:cover;">`;
+        else av.innerText = userData.name[0].toUpperCase();
+        document.getElementById('d-modes').innerHTML = userData.modes.map(m => `<span class="skill-tag">${m}</span>`).join('');
+        renderSkills();
+    }
+
+    function renderSkills() {
+        const listHtml = userData.skillsArray.map((s, i) => `
+            <div class="skill-item-card">
+                <strong>${s.name}</strong> (${s.level}) - ${s.exp} Yrs
+                <br><span class="delete-skill-link" onclick="deleteSkill(${i})">delete skill (-)</span>
+            </div>
+        `).join('');
+        document.getElementById('d-skills-list').innerHTML = listHtml;
+        const setupList = document.getElementById('setup-skills-list');
+        if(userData.skillsArray.length > 0) setupList.innerHTML = listHtml;
+        else setupList.innerHTML = `<p style="font-size: 12px; color: #999; text-align: center;">No skills added yet</p>`;
+    }
+
+    function openEditProfile() {
+        document.getElementById('tab-profile').classList.add('hidden');
+        document.getElementById('tab-edit-profile').classList.remove('hidden');
+        document.getElementById('edit-mobile').value = userData.mobile || "";
+        document.getElementById('edit-role').value = userData.role;
+        document.getElementById('edit-about').value = userData.about;
+        if(userData.photo) document.getElementById('edit-preview-img').src = userData.photo;
+    }
+
+    function saveEditProfile() {
+        userData.mobile = document.getElementById('edit-mobile').value;
+        userData.role = document.getElementById('edit-role').value;
+        userData.about = document.getElementById('edit-about').value;
+        goToDashboard();
+    }
+
+    function switchTab(tabId, el) {
+        document.querySelectorAll('#dashNav span').forEach(s => s.classList.remove('nav-active'));
+        el.classList.add('nav-active');
+        ['profile', 'skills', 'browse', 'videos', 'interests', 'sessions', 'edit-profile'].forEach(t => {
+            const element = document.getElementById('tab-' + t);
+            if(element) element.classList.add('hidden');
+        });
+        document.getElementById('tab-' + tabId).classList.remove('hidden');
+    }
+
+    function openSkillModal() { document.getElementById('skillModalOverlay').classList.remove('hidden'); }
+    function closeSkillModal() { document.getElementById('skillModalOverlay').classList.add('hidden'); }
+    
+    function addNewSkillToList() {
+        const n = document.getElementById('new-skill-name').value;
+        const l = document.getElementById('new-skill-level').value;
+        const e = document.getElementById('new-skill-exp').value;
+        if(!n) { alert("Please enter a skill name!"); return; }
+        userData.skillsArray.push({name: n, level: l, exp: e});
+        renderSkills(); 
+        document.getElementById('new-skill-name').value = "";
+        closeSkillModal();
+    }
+
+    function deleteSkill(i) { userData.skillsArray.splice(i, 1); renderSkills(); }
+    function showSignIn() { document.getElementById('signInView').classList.remove('hidden'); document.getElementById('signUpView').classList.add('hidden'); }
+    function showSignUp() { document.getElementById('signInView').classList.add('hidden'); document.getElementById('signUpView').classList.remove('hidden'); }
+    function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000); }
+let videosArray = [];
+
+function addVideo() {
+    const title = document.getElementById("video-title").value;
+    const link = document.getElementById("video-link").value;
+
+    if (!title || !link) {
+        alert("Please enter both video title and link");
+        return;
+    }
+
+    videosArray.push({ title, link });
+    renderVideos();
+
+    document.getElementById("video-title").value = "";
+    document.getElementById("video-link").value = "";
+}
+
+function renderVideos() {
+    const list = document.getElementById("video-list");
+
+    if (videosArray.length === 0) {
+        list.innerHTML = `<p style="color:#94a3b8;">No videos added yet</p>`;
+        return;
+    }
+
+    list.innerHTML = videosArray.map((v, index) => `
+        <div style="border:1px solid #e5e7eb; padding:10px; border-radius:8px; margin-bottom:10px;">
+            <strong>${v.title}</strong><br>
+            <a href="${v.link}" target="_blank" style="color:#6366f1;">Watch Video</a>
+            <br>
+            <button onclick="deleteVideo(${index})"
+                style="margin-top:6px; background:#ef4444; color:white; border:none; padding:4px 10px; border-radius:6px; cursor:pointer;">
+                Delete
+            </button>
+        </div>
+    `).join("");
+}
+function deleteVideo(index) {
+    videosArray.splice(index, 1);
+    renderVideos();
+}
+function searchProfiles() {
+    const keyword = document.getElementById("browse-search").value.toLowerCase();
+    const profiles = JSON.parse(localStorage.getItem("profiles")) || [];
+    const results = document.getElementById("browse-results");
+
+    const filtered = profiles.filter(p =>
+        p.name.toLowerCase().includes(keyword) ||
+        p.location.toLowerCase().includes(keyword) ||
+        p.skills.some(s => s.name.toLowerCase().includes(keyword))
+    );
+
+    if (filtered.length === 0) {
+        results.innerHTML = "<p style='color:#94a3b8;'>No profiles found</p>";
+        return;
+    }
+
+    results.innerHTML = filtered.map((p, i) => `
+        <div style="border:1px solid #e5e7eb; padding:12px; border-radius:8px; margin-bottom:10px;">
+            <strong>${p.name}</strong><br>
+            Role: ${p.role}<br>
+            Location: ${p.location}<br>
+            Skills: ${p.skills.map(s => s.name).join(", ")}<br><br>
+            <button onclick="sendInterest('${p.email}')"
+                style="background:#6366f1; color:white; border:none; padding:6px 12px; border-radius:6px;">
+                Connect
+            </button>
+        </div>
+    `).join("");
+}
+
+function sendInterest(email) {
+    alert("Interest sent to " + email);
+}
+
+let userRating = 0;
+
+function rate(stars) {
+    userRating = stars;
+
+    const starContainer = document.getElementById("stars").children;
+    for (let i = 0; i < starContainer.length; i++) {
+        starContainer[i].innerText = i < stars ? "★" : "☆";
+    }
+
+    document.getElementById("rating-text").innerText =
+        `You rated this ${stars} star${stars > 1 ? "s" : ""}`;
+}
+
+
+</script></body></html>
