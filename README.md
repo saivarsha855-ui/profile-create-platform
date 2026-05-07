@@ -29,7 +29,7 @@ The Profile Creation Platform is a web-based application that allows users to cr
 * CSS
 * JavaScript
 * (Add backend if used: Node.js / Python / PHP)
-* (Add database if used: MySQL / MongoDB)
+* (Add database if used: MySQL / MongoDB}
 
 ---
 
